@@ -834,7 +834,22 @@ function removeBoards(prefixes) {
 
 const SLOT0 = 5400, SLOTW = 2400; // inner pages sit to the right of Sitemap + Home, one column each
 
+// View mode shows top-level boards in layer order (top first). Put them in reading order.
+function orderBoards() {
+  const kids = (penpot.currentPage.root.children || []).slice();
+  const desired = ['Sitemap — OPF 2027', 'Home — Desktop 1440', 'Home — Mobile 375'];
+  PAGE_ORDER.forEach(k => { desired.push(PAGES[k].title + ' — Desktop 1440', PAGES[k].title + ' — Mobile 375'); });
+  kids.filter(s => s.name.startsWith('DS — ')).map(s => s.name).sort().forEach(n => desired.push(n));
+  const seq = desired.map(n => kids.find(k => k.name === n)).filter(Boolean);
+  for (let i = seq.length - 1; i >= 0; i--) {
+    try { seq[i].bringToFront(); } catch (e) { try { seq[i].setParentIndex(kids.length - 1); } catch (e2) {} }
+  }
+  console.log('OPF27 ordered', seq.length, 'boards; top is now', (penpot.currentPage.root.children || [])[0] && penpot.currentPage.root.children[0].name);
+  return seq;
+}
+
 function buildByKey(key) {
+  if (key === 'order') { orderBoards(); return []; }
   if (key === 'ds') return buildDesignSystem();
   if (key === 'home') {
     removeBoards(['Sitemap — ', 'Home — ']);
@@ -855,7 +870,7 @@ penpot.ui.onMessage(msg => {
   try {
     console.log('OPF27 ' + VERSION + ' building', msg.key);
     const shapes = buildByKey(msg.key);
-    if (penpot.viewport.zoomToShapes) penpot.viewport.zoomToShapes(shapes);
+    if (shapes.length && penpot.viewport.zoomToShapes) penpot.viewport.zoomToShapes(shapes);
     console.log('OPF27 built', msg.key);
     penpot.ui.sendMessage({ status: 'Built ✓ ' + msg.key, key: msg.key });
   } catch (e) {

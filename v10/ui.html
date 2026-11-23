@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { font-family: system-ui, sans-serif; font-size: 13px; margin: 12px; color: #e4e4e7; background: #18181b; }
+  h1 { font-size: 14px; margin: 0 0 4px; }
+  p { color: #a1a1aa; margin: 0 0 10px; line-height: 1.4; }
+  button { display: flex; justify-content: space-between; width: 100%; margin: 0 0 6px; padding: 9px 10px; border: 0; border-radius: 6px; background: #3f3f46; color: #fff; font-weight: 600; cursor: pointer; text-align: left; }
+  button.done { background: #14532d; }
+  button.busy { background: #0031DB; }
+  button span { color: #a1a1aa; font-weight: 400; }
+  #status { color: #a3e635; min-height: 1.4em; margin-top: 6px; }
+</style>
+</head>
+<body>
+  <h1>OPF27 Wireframe Builder</h1>
+  <p>Each button (re)builds that page's desktop + mobile boards on the current page. A build takes 10–40s.</p>
+  <div id="list"></div>
+  <div id="status"></div>
+<script>
+  const pages = [['order','↕ Order boards for View mode'],['ds','★ Design system (run in its own file)'],['home','Sitemap + Home'],['exhibition','Exhibition'],['cosplay','Cosplay Cup'],['music','Music Live'],['schedule','Schedule & Map'],['tickets','Tickets'],['news','News'],['article','News Article'],['access','Access & Venue'],['faq','FAQ & House Rules'],['joinus','Join Us'],['sponsors','Sponsors & Partners'],['contact','Contact'],['archive','Past Events'],['legal','Legal (template)']];
+  const list = document.getElementById('list'), status = document.getElementById('status');
+  pages.forEach(([key, label]) => {
+    const b = document.createElement('button');
+    b.id = 'b-' + key; b.dataset.key = key;
+    b.innerHTML = label + ' <span>build</span>';
+    b.onclick = () => { b.className = 'busy'; status.textContent = 'Building ' + label + '…'; parent.postMessage({ cmd: 'build', key }, '*'); };
+    list.appendChild(b);
+  });
+  window.addEventListener('message', e => {
+    const d = e.data || {};
+    if (d.status) status.textContent = d.status;
+    if (d.key) { const b = document.getElementById('b-' + d.key); if (b) { b.className = 'done'; b.querySelector('span').textContent = 'rebuild'; } }
+  });
+</script>
+</body>
+</html>
