@@ -29,7 +29,7 @@ function mkRect(S, x, y, w, h, color, o) {
 }
 
 function estH(str, size, w) {
-  const perLine = Math.max(1, Math.floor(w / (size * 0.56)));
+  const perLine = Math.max(1, Math.floor(w / (size * 0.5)));
   const lines = str.split('\n').reduce((n, l) => n + Math.max(1, Math.ceil(l.length / perLine)), 0);
   return Math.ceil(lines * size * 1.3);
 }
@@ -44,7 +44,7 @@ function mkText(S, x, y, w, str, o) {
   S.b.appendChild(t);
   t.name = o.name || str.replace(/\n/g, ' ').slice(0, 40);
   t.fontSize = String(o.size || 16);
-  t.fontWeight = String(o.weight || 400);
+  t.fontWeight = String(Math.min(o.weight || 400, 700)); // default font tops out at 700
   t.fills = fill(o.color || C.ink);
   if (o.upper) t.textTransform = 'uppercase';
   if (o.align) t.align = o.align;
@@ -170,10 +170,10 @@ function buildHome(x, mobile) {
       T(S, S.W - 16 - 40, 22, 40, '☰', { size: 16, align: 'center' });
     } else {
       const nav = ['Event ▾', 'Tickets', 'News', 'Visit ▾', 'Join Us', 'Sponsors'];
-      let nx = 320;
-      nav.forEach(n => { T(S, nx, 30, 110, n, { size: 15, weight: 600 }); nx += n.length * 9 + 40; });
-      R(S, 320 + 'Event ▾TicketsNewsVisit ▾'.length * 9 + 160 + 62, 22, 36, 18, C.pink, { name: 'NEW badge', r: 9 });
-      T(S, 320 + 'Event ▾TicketsNewsVisit ▾'.length * 9 + 160 + 62, 24, 36, 'NEW', { size: 10, weight: 700, color: C.white, align: 'center' });
+      nav.forEach((n, i) => T(S, 320 + i * 118, 30, 100, n, { size: 15, weight: 600 }));
+      const jx = 320 + 4 * 118 + 60; // after "Join Us"
+      R(S, jx, 20, 36, 18, C.pink, { name: 'NEW badge', r: 9 });
+      T(S, jx, 22, 36, 'NEW', { size: 10, weight: 700, color: C.white, align: 'center' });
       T(S, S.W - S.pad - 170 - 200, 30, 70, 'EN | JP', { size: 14, weight: 600, color: C.muted });
       [0, 1, 2].forEach(i => R(S, S.W - S.pad - 170 - 120 + i * 36, 28, 24, 24, C.ph, { name: 'Social icon', ellipse: true }));
       BTN(S, S.W - S.pad - 170, 16, 170, 'BUY TICKETS');
@@ -183,7 +183,7 @@ function buildHome(x, mobile) {
   });
 
   section(ctx, '01 Hero', C.white, S => {
-    const h = S.m ? 600 : 680;
+    const h = S.m ? 660 : 680;
     IMG(S, 0, 0, S.W, h, '', { color: C.phDark });
     T(S, S.m ? 16 : S.W - 520, S.m ? 60 : 80, S.m ? 343 : 400, 'KEY VISUAL — "Get Isekaied" artwork\n(optional subtle animation)', { size: 13, weight: 600, color: C.white, align: S.m ? 'left' : 'right' });
     let y = S.m ? 150 : 190;
@@ -204,18 +204,18 @@ function buildHome(x, mobile) {
         T(S, cx + i * 100, y + 22, 88, l, { size: 11, weight: 700, color: C.muted, align: 'center' });
       });
     }
-    NOTE(S, S.pad, h - (S.m ? 110 : 76), S.m ? S.cw : 760, 'Hero CTA changes by site phase: Announce → "Get updates" + "Apply for a booth" · On sale → "Buy tickets" + countdown · Event week → "Today\'s schedule" + "Map" · Post-event → "See the highlights"');
+    NOTE(S, S.pad, h - (S.m ? 124 : 76), S.m ? S.cw : 760, 'Hero CTA changes by site phase: Announce → "Get updates" + "Apply for a booth" · On sale → "Buy tickets" + countdown · Event week → "Today\'s schedule" + "Map" · Post-event → "See the highlights"');
     return h;
   });
 
   section(ctx, '02 Quick facts', C.alt, S => {
     const facts = [['JUNE 5–6', 'Sat & Sun, 2027'], ['10:00–22:00', 'Event hours'], ['OKADA MANILA', '3 halls · Parañaque'], ['30,000+', 'Fans expected']];
-    const end = grid(S, S.m ? 32 : 48, 4, 4, 2, (x, y, w, i) => {
+    const end = grid(S, 56, 4, 4, 2, (x, y, w, i) => {
       T(S, x, y, w, facts[i][0], { size: S.m ? 20 : 30, weight: 800 });
       T(S, x, y + (S.m ? 30 : 42), w, facts[i][1], { size: 14, color: C.muted });
       return 64;
     });
-    return end + (S.m ? 32 : 48);
+    return end + (S.m ? 40 : 48);
   });
 
   section(ctx, '03 Concept — 3 Worlds', C.white, S => {
@@ -316,7 +316,7 @@ function buildHome(x, mobile) {
   });
 
   section(ctx, '10 Partners strip', C.white, S => {
-    let y = H2(S, 0, 'Partners', null);
+    let y = H2(S, V, 'Partners', null);
     T(S, S.pad, y, S.cw, 'PRESENTED BY', { size: 12, weight: 700, color: C.muted });
     y = grid(S, y + 28, 3, 3, 3, (x, yy, w) => { IMG(S, x, yy, w, S.m ? 56 : 96, 'LOGO', { r: 8 }); return S.m ? 56 : 96; }) + 24;
     y = grid(S, y, 6, 6, 3, (x, yy, w) => { IMG(S, x, yy, w, 64, 'LOGO', { r: 8 }); return 64; }) + 24;
@@ -468,7 +468,7 @@ function clean() {
 }
 
 try {
-  console.log('OPF27 plugin v3 start, removed', clean());
+  console.log('OPF27 plugin v4 start, removed', clean());
   const sm = buildSitemap();
   const d = buildHome(sm.x + sm.width + 400, false);
   const m = buildHome(d.x + d.width + 200, true);
