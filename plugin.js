@@ -13,9 +13,11 @@ const C = {
 function fill(c) { return c ? [{ fillColor: c, fillOpacity: 1 }] : []; }
 
 function R(S, x, y, w, h, color, o = {}) {
+  S.q.push(() => mkRect(S, x, y, w, h, color, o));
+}
+function mkRect(S, x, y, w, h, color, o) {
   const r = penpot.createRectangle();
   S.b.appendChild(r);
-  if (r.bringToFront) r.bringToFront();
   r.name = o.name || 'Box';
   r.resize(Math.max(1, w), Math.max(1, h));
   r.x = S.b.x + x; r.y = S.b.y + y;
@@ -33,10 +35,13 @@ function estH(str, size, w) {
 }
 
 function T(S, x, y, w, str, o = {}) {
+  S.q.push(() => mkText(S, x, y, w, str, o));
+  return estH(str, o.size || 16, w);
+}
+function mkText(S, x, y, w, str, o) {
   const t = penpot.createText(str);
   if (!t) return 0;
   S.b.appendChild(t);
-  if (t.bringToFront) t.bringToFront();
   t.name = o.name || str.replace(/\n/g, ' ').slice(0, 40);
   t.fontSize = String(o.size || 16);
   t.fontWeight = String(o.weight || 400);
@@ -113,6 +118,10 @@ function grid(S, y, count, n, nMobile, fn) {
   return rowY + rowH;
 }
 
+// Penpot inserts each new child BELOW existing ones, so create in reverse order:
+// the last thing drawn (labels, tags) ends up on top.
+function flush(S) { const q = S.q; S.q = []; for (let i = q.length - 1; i >= 0; i--) q[i](); }
+
 // ---------- page / section scaffolding ----------
 function pageBoard(name, x, y, W) {
   const b = penpot.createBoard();
@@ -126,15 +135,15 @@ function pageBoard(name, x, y, W) {
 function section(ctx, name, bg, build) {
   const b = penpot.createBoard();
   ctx.root.appendChild(b);
-  if (b.bringToFront) b.bringToFront();
   b.name = name;
   b.resize(ctx.W, 3000);
   b.x = ctx.root.x; b.y = ctx.root.y + ctx.y;
   b.fills = fill(bg);
-  const S = { b, W: ctx.W, pad: ctx.pad, cw: ctx.cw, m: ctx.m };
+  const S = { b, W: ctx.W, pad: ctx.pad, cw: ctx.cw, m: ctx.m, q: [] };
   const h = Math.ceil(build(S));
   b.resize(ctx.W, h);
   if (ctx.tags !== false) TAG(S, name);
+  flush(S);
   ctx.y += h;
 }
 
@@ -370,7 +379,7 @@ function buildHome(x, mobile) {
 function buildSitemap() {
   const W = 2440;
   const root = pageBoard('Sitemap — OPF 2027', 0, 0, W);
-  const S = { b: root, W, pad: 120, cw: W - 240, m: false };
+  const S = { b: root, W, pad: 120, cw: W - 240, m: false, q: [] };
   T(S, 120, 80, 1600, 'OTAKU POP FES 2027 — SITEMAP', { size: 48, weight: 900 });
   T(S, 120, 148, 1600, 'otakupopfes.com · Draft v0.1 · Pink tag = new page vs OPF 2026 · Dashed = external', { size: 18, color: C.muted });
 
@@ -447,6 +456,7 @@ function buildSitemap() {
     T(S, px + 24, py + 88, pw - 48, p[2], { size: 15, color: ink });
   });
   root.resize(W, py + 170 + 120);
+  flush(S);
   return root;
 }
 
@@ -458,7 +468,7 @@ function clean() {
 }
 
 try {
-  clean();
+  console.log('OPF27 plugin v3 start, removed', clean());
   const sm = buildSitemap();
   const d = buildHome(sm.x + sm.width + 400, false);
   const m = buildHome(d.x + d.width + 200, true);
