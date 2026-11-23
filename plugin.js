@@ -15,6 +15,7 @@ function fill(c) { return c ? [{ fillColor: c, fillOpacity: 1 }] : []; }
 function R(S, x, y, w, h, color, o = {}) {
   const r = penpot.createRectangle();
   S.b.appendChild(r);
+  if (r.bringToFront) r.bringToFront();
   r.name = o.name || 'Box';
   r.resize(Math.max(1, w), Math.max(1, h));
   r.x = S.b.x + x; r.y = S.b.y + y;
@@ -35,6 +36,7 @@ function T(S, x, y, w, str, o = {}) {
   const t = penpot.createText(str);
   if (!t) return 0;
   S.b.appendChild(t);
+  if (t.bringToFront) t.bringToFront();
   t.name = o.name || str.replace(/\n/g, ' ').slice(0, 40);
   t.fontSize = String(o.size || 16);
   t.fontWeight = String(o.weight || 400);
@@ -124,6 +126,7 @@ function pageBoard(name, x, y, W) {
 function section(ctx, name, bg, build) {
   const b = penpot.createBoard();
   ctx.root.appendChild(b);
+  if (b.bringToFront) b.bringToFront();
   b.name = name;
   b.resize(ctx.W, 3000);
   b.x = ctx.root.x; b.y = ctx.root.y + ctx.y;
@@ -450,7 +453,7 @@ function buildSitemap() {
 function clean() {
   const page = penpot.currentPage;
   let n = 0;
-  (page.root.children || []).slice().forEach(s => { if (s.name === 'svg') { s.remove(); n++; } });
+  (page.root.children || []).slice().forEach(s => { if (s.name === 'svg' || s.name.startsWith('Sitemap — ') || s.name.startsWith('Home — ')) { s.remove(); n++; } });
   return n;
 }
 
