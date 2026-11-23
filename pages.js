@@ -835,6 +835,7 @@ function removeBoards(prefixes) {
 const SLOT0 = 5400, SLOTW = 2400; // inner pages sit to the right of Sitemap + Home, one column each
 
 function buildByKey(key) {
+  if (key === 'ds') return buildDesignSystem();
   if (key === 'home') {
     removeBoards(['Sitemap — ', 'Home — ']);
     const sm = buildSitemap();

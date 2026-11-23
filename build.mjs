@@ -7,7 +7,7 @@ const v = process.argv[2];
 if (!/^v\d+$/.test(v || '')) { console.error('usage: node build.mjs v<N>'); process.exit(1); }
 const base = 'https://bmcmbuenviaje.github.io/opf27-penpot-plugin/' + v;
 fs.mkdirSync(v, { recursive: true });
-const code = `const VERSION = '${v}';\n` + fs.readFileSync('plugin.js', 'utf8') + '\n' + fs.readFileSync('pages.js', 'utf8');
+const code = `const VERSION = '${v}';\n` + fs.readFileSync('plugin.js', 'utf8') + '\n' + fs.readFileSync('ds.js', 'utf8') + '\n' + fs.readFileSync('pages.js', 'utf8');
 fs.writeFileSync(`${v}/plugin.js`, code);
 fs.copyFileSync('ui.html', `${v}/ui.html`);
 const manifest = {

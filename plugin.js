@@ -26,7 +26,21 @@ function mkRect(S, x, y, w, h, color, o) {
   if (o.stroke) r.strokes = [{ strokeColor: o.stroke, strokeWidth: o.sw || 1, strokeAlignment: 'inner', strokeStyle: o.dash ? 'dashed' : 'solid', strokeOpacity: 1 }];
   if (o.r) r.borderRadius = o.r;
   if (o.ellipse) r.borderRadius = Math.min(w, h) / 2;
+  if (o.shadow) { try { r.shadows = [{ style: 'drop-shadow', offsetX: 0, offsetY: o.shadow[0], blur: o.shadow[1], spread: 0, hidden: false, color: { color: '#07103F', opacity: o.shadow[2] } }]; } catch (e) {} }
   return r;
+}
+
+// Applies a Penpot font (Google fonts are built in) at the closest weight; falls back to the default font.
+const FONT_CACHE = {};
+function applyFont(t, name, weight) {
+  try {
+    if (!(name in FONT_CACHE)) FONT_CACHE[name] = penpot.fonts.findByName(name) || null;
+    const f = FONT_CACHE[name];
+    if (!f) { t.fontWeight = String(Math.min(weight, 700)); return; }
+    const vs = f.variants.filter(v => v.fontStyle === 'normal');
+    const v = vs.find(v => String(v.fontWeight) === String(weight)) || vs[0] || f.variants[0];
+    f.applyToText(t, v);
+  } catch (e) { t.fontWeight = String(Math.min(weight, 700)); }
 }
 
 function estH(str, size, w) {
@@ -44,9 +58,14 @@ function mkText(S, x, y, w, str, o) {
   if (!t) return 0;
   S.b.appendChild(t);
   t.name = o.name || str.replace(/\n/g, ' ').slice(0, 40);
-  t.fontSize = String(o.size || 16);
-  t.fontWeight = String(Math.min(o.weight || 400, 700)); // default font tops out at 700
-  t.fills = fill(o.color || C.ink);
+  if (o.typo) { try { o.typo.applyToText(t); } catch (e) { /* fall through to manual styling */ } }
+  if (o.font) applyFont(t, o.font, o.weight || 400);
+  else if (!o.typo) t.fontWeight = String(Math.min(o.weight || 400, 700)); // default font tops out at 700
+  if (!o.typo) t.fontSize = String(o.size || 16);
+  if (o.lh) t.lineHeight = String(o.lh);
+  if (o.ls != null) t.letterSpacing = String(o.ls);
+  if (o.outline) { t.strokes = [{ strokeColor: o.outline, strokeWidth: 1.5, strokeAlignment: 'outer', strokeStyle: 'solid', strokeOpacity: 1 }]; }
+  t.fills = o.outline ? [] : fill(o.color || C.ink);
   if (o.upper) t.textTransform = 'uppercase';
   if (o.align) t.align = o.align;
   const h = estH(str, o.size || 16, w);
