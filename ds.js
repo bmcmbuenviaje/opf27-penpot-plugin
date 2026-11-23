@@ -109,7 +109,7 @@ function dsCover(x) {
     if (d > 2) R(S, 840 + c * 36, 40 + r * 36, d, d, K['Isekai Blue'], { name: 'Halftone dot', ellipse: true });
   }
   T(S, 120, 260, 1000, 'OTAKU POP FES 2027', { font: BODY, weight: 800, size: 18, ls: 2, color: K['Pop Yellow'] });
-  T(S, 120, 300, 1100, 'DESIGN SYSTEM', { font: DISPLAY, size: 120, color: K.White, lh: 1 });
+  T(S, 120, 300, 1200, 'DESIGN SYSTEM', { font: DISPLAY, size: 96, color: K.White, lh: 1 });
   T(S, 120, 440, 900, 'v0.1 · Foundations and core components for the OPF 2027 website. Built from the concept demo (mineski-stephen.github.io/opf-webdemo).', { font: BODY, size: 20, lh: 1.5, color: '#C9CCE0' });
   const sw = [K['Isekai Blue'], K['Pop Yellow'], K['Sakura Pink'], K['Portal Cyan'], K.White];
   sw.forEach((c, i) => R(S, 120 + i * 132, 560, 120, 120, c, { name: 'Brand swatch', r: 16 }));
@@ -174,7 +174,7 @@ function dsTypography(x) {
   y = dsH(S, y, 'Type scale', 'Desktop size shown; the mobile size is in the right column.');
   TYPE.forEach(t => {
     const ty = libTypo(t);
-    const sample = t[6] ? (t[3] >= 44 ? 'Get Isekaied' : 'Three worlds') : (t[3] >= 18 ? 'Anime, games, cosplay and live music' : 'Doors open at 10:00 · June 5–6, 2027');
+    const sample = t[6] ? (t[3] >= 56 ? 'OPF 2027' : t[3] >= 44 ? 'Get Isekaied' : 'Three worlds') : (t[3] >= 18 ? 'Anime, games, cosplay and live music' : 'Doors open at 10:00 · June 5–6, 2027');
     T(S, 120, y + 6, 200, t[0], { font: BODY, weight: 800, size: 14, color: K['Isekai Blue'] });
     T(S, 120, y + 28, 200, t[8], { font: BODY, size: 12, color: K.Muted });
     const h = Math.max(60, Math.ceil(t[3] * t[4]) + 16);
