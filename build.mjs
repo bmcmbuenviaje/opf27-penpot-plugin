@@ -14,7 +14,7 @@ const manifest = {
   name: 'OPF27 Wireframe Builder',
   description: 'Builds OPF 2027 lo-fi wireframes (sitemap, home and all inner pages) as native Penpot layers.',
   code: `${base}/plugin.js`,
-  permissions: ['content:read', 'content:write'],
+  permissions: ['content:read', 'content:write', 'library:read', 'library:write'],
 };
 fs.writeFileSync(`${v}/manifest.json`, JSON.stringify(manifest, null, 2) + '\n');
 fs.writeFileSync('manifest.json', JSON.stringify(manifest, null, 2) + '\n');
