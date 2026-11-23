@@ -170,8 +170,8 @@ function buildHome(x, mobile) {
       T(S, S.W - 16 - 40, 22, 40, '☰', { size: 16, align: 'center' });
     } else {
       const nav = ['Event ▾', 'Tickets', 'News', 'Visit ▾', 'Join Us', 'Sponsors'];
-      nav.forEach((n, i) => T(S, 320 + i * 118, 30, 100, n, { size: 15, weight: 600 }));
-      const jx = 320 + 4 * 118 + 60; // after "Join Us"
+      nav.forEach((n, i) => T(S, 300 + i * 105, 30, 95, n, { size: 15, weight: 600 }));
+      const jx = 300 + 4 * 105 + 60; // after "Join Us"
       R(S, jx, 20, 36, 18, C.pink, { name: 'NEW badge', r: 9 });
       T(S, jx, 22, 36, 'NEW', { size: 10, weight: 700, color: C.white, align: 'center' });
       T(S, S.W - S.pad - 170 - 200, 30, 70, 'EN | JP', { size: 14, weight: 600, color: C.muted });
@@ -468,7 +468,7 @@ function clean() {
 }
 
 try {
-  console.log('OPF27 plugin v4 start, removed', clean());
+  console.log('OPF27 plugin v5 start, removed', clean());
   const sm = buildSitemap();
   const d = buildHome(sm.x + sm.width + 400, false);
   const m = buildHome(d.x + d.width + 200, true);
