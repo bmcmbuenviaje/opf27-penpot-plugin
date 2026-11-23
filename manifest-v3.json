@@ -1,0 +1,6 @@
+{
+  "name": "OPF27 Wireframe Builder",
+  "description": "Builds OPF 2027 lo-fi wireframes (sitemap, home desktop + mobile) as native Penpot layers.",
+  "code": "https://bmcmbuenviaje.github.io/opf27-penpot-plugin/plugin-v3.js",
+  "permissions": ["content:read", "content:write"]
+}
