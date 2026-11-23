@@ -1,7 +1,8 @@
 // OPF27 Wireframe Builder — Penpot plugin.
 // Builds lo-fi wireframes as native, editable Penpot layers (boards, rectangles, text).
 
-// Runs once on load: builds Sitemap, Home desktop and Home mobile side by side on the current page.
+// Core: primitives, shared sections, Home and Sitemap. pages.js adds the other pages + the UI entry point.
+// Build: node build.mjs <version>  → concatenates plugin.js + pages.js into <version>/plugin.js
 
 const C = {
   white: '#FFFFFF', alt: '#F4F4F5', ph: '#D4D4D8', phDark: '#A1A1AA', line: '#D4D4D8',
@@ -58,7 +59,7 @@ function mkText(S, x, y, w, str, o) {
 function IMG(S, x, y, w, h, label, o = {}) {
   R(S, x, y, w, h, o.color || C.ph, { name: 'Image: ' + label, r: o.r });
   const lw = Math.min(w - 16, 420);
-  T(S, x + (w - lw) / 2, y + h / 2 - 10, lw, label, { size: 13, color: o.ink || C.muted, align: 'center', weight: 600 });
+  if (label) T(S, x + (w - lw) / 2, y + h / 2 - 10, lw, label, { size: 13, color: o.ink || C.muted, align: 'center', weight: 600 });
 }
 
 function BTN(S, x, y, w, label, kind = 'primary', h = 48) {
@@ -155,11 +156,8 @@ function newCtx(name, x, mobile) {
 
 function finish(ctx) { ctx.root.resize(ctx.W, ctx.y); }
 
-// ---------- HOME ----------
-function buildHome(x, mobile) {
-  const ctx = newCtx(mobile ? 'Home — Mobile 375' : 'Home — Desktop 1440', x, mobile);
-  const V = mobile ? 48 : 96; // vertical section padding
-
+// ---------- shared header / footer ----------
+function secHeader(ctx) {
   section(ctx, '00 Header (sticky)', C.white, S => {
     const h = S.m ? 64 : 80;
     R(S, S.pad, (h - 40) / 2, S.m ? 96 : 140, 40, C.ph, { name: 'Logo', r: 4 });
@@ -181,6 +179,35 @@ function buildHome(x, mobile) {
     R(S, 0, h - 1, S.W, 1, C.line, { name: 'Divider' });
     return h;
   });
+
+}
+
+function secFooter(ctx, name = 'Footer') {
+  section(ctx, name, C.night, S => {
+    const colsTxt = [
+      ['OTAKU POP FES 2027', 'June 5–6, 2027\nOkada Manila\nBrought from Japan by CyberE\nOrganized by Mineski Global'],
+      ['EVENT', 'Exhibition\nCosplay Cup\nMusic Live\nSchedule & Map\nTickets'],
+      ['VISIT', 'Access & Venue\nFAQ & House Rules\nNews\nPast Events'],
+      ['WORK WITH US', 'Join Us (Exhibitors)\nSponsors & Partners\nContact'],
+    ];
+    let y = grid(S, S.m ? 40 : 64, 4, 4, 2, (x, yy, w, i) => {
+      T(S, x, yy, w, colsTxt[i][0], { size: 13, weight: 800, color: C.white });
+      return 28 + T(S, x, yy + 28, w, colsTxt[i][1], { size: 14, color: C.phDark });
+    }) + 40;
+    R(S, S.pad, y, S.cw, 1, C.night2, { name: 'Divider' });
+    y += 20;
+    y += T(S, S.pad, y, S.cw, '© 2027 Otaku Pop Fes Executive Committee  ·  Privacy  ·  Terms  ·  Ticket Terms', { size: 13, color: C.phDark });
+    return y + 32;
+  });
+
+}
+
+// ---------- HOME ----------
+function buildHome(x, mobile) {
+  const ctx = newCtx(mobile ? 'Home — Mobile 375' : 'Home — Desktop 1440', x, mobile);
+  const V = mobile ? 48 : 96; // vertical section padding
+
+  secHeader(ctx);
 
   section(ctx, '01 Hero', C.white, S => {
     const h = S.m ? 660 : 680;
@@ -354,22 +381,7 @@ function buildHome(x, mobile) {
     return y + 40 + V;
   });
 
-  section(ctx, '13 Footer', C.night, S => {
-    const colsTxt = [
-      ['OTAKU POP FES 2027', 'June 5–6, 2027\nOkada Manila\nBrought from Japan by CyberE\nOrganized by Mineski Global'],
-      ['EVENT', 'Exhibition\nCosplay Cup\nMusic Live\nSchedule & Map\nTickets'],
-      ['VISIT', 'Access & Venue\nFAQ & House Rules\nNews\nPast Events'],
-      ['WORK WITH US', 'Join Us (Exhibitors)\nSponsors & Partners\nContact'],
-    ];
-    let y = grid(S, S.m ? 40 : 64, 4, 4, 2, (x, yy, w, i) => {
-      T(S, x, yy, w, colsTxt[i][0], { size: 13, weight: 800, color: C.white });
-      return 28 + T(S, x, yy + 28, w, colsTxt[i][1], { size: 14, color: C.phDark });
-    }) + 40;
-    R(S, S.pad, y, S.cw, 1, C.night2, { name: 'Divider' });
-    y += 20;
-    y += T(S, S.pad, y, S.cw, '© 2027 Otaku Pop Fes Executive Committee  ·  Privacy  ·  Terms  ·  Ticket Terms', { size: 13, color: C.phDark });
-    return y + 32;
-  });
+  secFooter(ctx, '13 Footer');
 
   finish(ctx);
   return ctx.root;
@@ -460,21 +472,3 @@ function buildSitemap() {
   return root;
 }
 
-function clean() {
-  const page = penpot.currentPage;
-  let n = 0;
-  (page.root.children || []).slice().forEach(s => { if (s.name === 'svg' || s.name.startsWith('Sitemap — ') || s.name.startsWith('Home — ')) { s.remove(); n++; } });
-  return n;
-}
-
-try {
-  console.log('OPF27 plugin v5 start, removed', clean());
-  const sm = buildSitemap();
-  const d = buildHome(sm.x + sm.width + 400, false);
-  const m = buildHome(d.x + d.width + 200, true);
-  if (penpot.viewport.zoomToShapes) penpot.viewport.zoomToShapes([sm, d, m]);
-  console.log('OPF27 wireframes built');
-} catch (e) {
-  console.error('OPF27 build error', e);
-}
-penpot.closePlugin();
